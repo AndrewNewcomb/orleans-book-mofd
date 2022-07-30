@@ -34,6 +34,7 @@ public class Program
             .UseOrleans(builder => 
             {
                 builder
+                    //.AddApplicationInsightsTelemetryConsumer("INSTRUMENTATION_KEY")
                     .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RobotGrain).Assembly).WithReferences())
                     .UseLocalhostClustering()
                     .ConfigureLogging(logging =>

@@ -12,6 +12,7 @@ class Program
     static async Task Main()
     {
         var client = new ClientBuilder()
+            //.AddApplicationInsightsTelemetryConsumer("INSTRUMENTATION_KEY")
             .UseLocalhostClustering()
             .ConfigureLogging(logging =>
             {
