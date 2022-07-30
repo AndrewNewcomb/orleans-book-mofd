@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using OrleansBook.GrainInterfaces;
 using System;
@@ -8,10 +9,19 @@ namespace OrleansBook.GrainClases;
 
 public class RobotGrain : Grain, IRobotGrain
 {
-    private Queue<string> instructions = new Queue<string>();
+    private readonly Queue<string> instructions = new Queue<string>();
+    private readonly ILogger<RobotGrain> logger;
+
+    public RobotGrain(ILogger<RobotGrain> logger)
+    {
+        this.logger = logger;
+    }
 
     public Task AddInstruction(string instruction)
     {
+        var key = this.GetPrimaryKeyString();
+        this.logger.LogDebug("{Key} adding '{Instruction}'", key, instruction);
+
         this.instructions.Enqueue(instruction);
         return Task.CompletedTask;
     }
@@ -29,6 +39,8 @@ public class RobotGrain : Grain, IRobotGrain
         }
 
         var instruction = this.instructions.Dequeue();
+        var key = this.GetPrimaryKeyString();
+        this.logger.LogDebug("{Key} next '{Instruction}'", key, instruction);
         return Task.FromResult<string?>(instruction);
     }
 }

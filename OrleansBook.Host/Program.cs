@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Hosting;
 using OrleansBook.GrainClases;
@@ -23,10 +25,21 @@ public class Program
  
     public static IHostBuilder CreateHostBuilder(string[] args) =>    
         new HostBuilder()
-        .UseOrleans(builder => 
-        {
-            builder.ConfigureApplicationParts(parts =>
-                parts.AddApplicationPart(typeof(RobotGrain).Assembly).WithReferences())
-                .UseLocalhostClustering();    
-        });
+            // Wanted to set log level from appsettings, but can't get
+            // it to work. 
+            // .ConfigureAppConfiguration((hostingContext, config) =>
+            // {
+            //     config.AddJsonFile("appsettings.json", optional: false);
+            // })
+            .UseOrleans(builder => 
+            {
+                builder
+                    .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RobotGrain).Assembly).WithReferences())
+                    .UseLocalhostClustering()
+                    .ConfigureLogging(logging =>
+                    {
+                        logging.AddConsole();
+                        logging.SetMinimumLevel(LogLevel.Warning);
+                    });  
+            });             
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using OrleansBook.GrainInterfaces;
@@ -12,6 +13,10 @@ class Program
     {
         var client = new ClientBuilder()
             .UseLocalhostClustering()
+            .ConfigureLogging(logging =>
+            {
+                logging.AddConsole();
+            })
             .Build();  
 
         using (client)
@@ -20,8 +25,13 @@ class Program
 
             while(true)
             {
-                Console.WriteLine("Please enter a robot name...");
+                Console.WriteLine("Please enter a robot name (or 'exit' to stop)...");              
+
                 var grainId = Console.ReadLine();
+                if("exit".Equals(grainId, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    break;
+                }
                 var grain = client.GetGrain<IRobotGrain>(grainId);
 
                 Console.WriteLine("Please enter an instruction...");
