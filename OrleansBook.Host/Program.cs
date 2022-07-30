@@ -41,6 +41,8 @@ public class Program
                     {
                         logging.AddConsole();
                         logging.SetMinimumLevel(LogLevel.Warning);
-                    });  
+                    });
+
+                builder.UseDashboard();  
             });             
 }
