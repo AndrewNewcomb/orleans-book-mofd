@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using Orleans.Runtime;
 using OrleansBook.GrainInterfaces;
 using System;
 using System.Collections.Generic;
@@ -9,38 +10,42 @@ namespace OrleansBook.GrainClases;
 
 public class RobotGrain : Grain, IRobotGrain
 {
-    private readonly Queue<string> instructions = new Queue<string>();
+    private readonly IPersistentState<RobotState> state;
     private readonly ILogger<RobotGrain> logger;
 
-    public RobotGrain(ILogger<RobotGrain> logger)
+    public RobotGrain(ILogger<RobotGrain> logger, 
+        [PersistentState("robotState", "robotStateStore")]
+        IPersistentState<RobotState> state)
     {
         this.logger = logger;
+        this.state = state;
     }
 
-    public Task AddInstruction(string instruction)
+    public async Task AddInstruction(string instruction)
     {
         var key = this.GetPrimaryKeyString();
         this.logger.LogDebug("{Key} adding '{Instruction}'", key, instruction);
 
-        this.instructions.Enqueue(instruction);
-        return Task.CompletedTask;
+        this.state.State.Instructions.Enqueue(instruction);
+        await this.state.WriteStateAsync();
     }
 
     public Task<int> GetInstructionCount()
     {
-        return Task.FromResult(this.instructions.Count);
+        return Task.FromResult(this.state.State.Instructions.Count);
     }
 
-    public Task<string?> GetNextInstruction()
+    public async Task<string?> GetNextInstruction()
     {
-        if(this.instructions.Count == 0)
+        if(this.state.State.Instructions.Count == 0)
         {
-            return Task.FromResult<string?>(null);
+            return null;
         }
 
-        var instruction = this.instructions.Dequeue();
+        var instruction = this.state.State.Instructions.Dequeue();
         var key = this.GetPrimaryKeyString();
         this.logger.LogDebug("{Key} next '{Instruction}'", key, instruction);
-        return Task.FromResult<string?>(instruction);
+        await this.state.WriteStateAsync();
+        return instruction;
     }
 }

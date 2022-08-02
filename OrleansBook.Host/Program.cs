@@ -50,6 +50,7 @@ public class Program
 
                 builder.UseDashboard();
                 builder.UseLinuxEnvironmentStatistics();
-                //builder.UsePerfCounterEnvironmentStatistics();  
+                //builder.UsePerfCounterEnvironmentStatistics();
+                builder.AddMemoryGrainStorage("robotStateStore");  
             });             
 }
