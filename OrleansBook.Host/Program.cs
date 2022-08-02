@@ -1,11 +1,16 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Hosting;
+using Orleans.Statistics;
 using OrleansBook.GrainClases;
+
+// Needs nuget packages
+// Microsoft.Orleans.OrleansTelemetryConsumers.Linux for linux
+// Microsoft.Orleans.OrleansTelemetryConsumers.Counters for windows
 
 namespace OrleansBook.Host;
 
@@ -43,6 +48,8 @@ public class Program
                         logging.SetMinimumLevel(LogLevel.Warning);
                     });
 
-                builder.UseDashboard();  
+                builder.UseDashboard();
+                builder.UseLinuxEnvironmentStatistics();
+                //builder.UsePerfCounterEnvironmentStatistics();  
             });             
 }

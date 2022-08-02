@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.AI" Version="3.6.2" />
+    <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Linux" Version="3.6.2" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="3.6.2" />
     <PackageReference Include="OrleansDashboard" Version="3.6.2" />
   </ItemGroup>
