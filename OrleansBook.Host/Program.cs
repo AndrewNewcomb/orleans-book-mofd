@@ -8,10 +8,6 @@ using Orleans.Hosting;
 using Orleans.Statistics;
 using OrleansBook.GrainClases;
 
-// Needs nuget packages
-// Microsoft.Orleans.OrleansTelemetryConsumers.Linux for linux
-// Microsoft.Orleans.OrleansTelemetryConsumers.Counters for windows
-
 namespace OrleansBook.Host;
 
 public class Program
@@ -28,29 +24,45 @@ public class Program
         await host.StopAsync();
     }
  
-    public static IHostBuilder CreateHostBuilder(string[] args) =>    
-        new HostBuilder()
-            // Wanted to set log level from appsettings, but can't get
-            // it to work. 
-            // .ConfigureAppConfiguration((hostingContext, config) =>
-            // {
-            //     config.AddJsonFile("appsettings.json", optional: false);
-            // })
-            .UseOrleans(builder => 
-            {
-                builder
-                    //.AddApplicationInsightsTelemetryConsumer("INSTRUMENTATION_KEY")
-                    .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RobotGrain).Assembly).WithReferences())
-                    .UseLocalhostClustering()
-                    .ConfigureLogging(logging =>
-                    {
-                        logging.AddConsole();
-                        logging.SetMinimumLevel(LogLevel.Warning);
-                    });
+    public static IHostBuilder CreateHostBuilder(string[] args) 
+    {
+        // REMARK Wanted to set log level from appsettings, but can't get it to work. 
 
-                builder.UseDashboard();
-                builder.UseLinuxEnvironmentStatistics();
-                //builder.UsePerfCounterEnvironmentStatistics();
-                builder.AddMemoryGrainStorage("robotStateStore");  
-            });             
+        var hb = new HostBuilder();
+        hb.ConfigureAppConfiguration((hostingContext, config) =>
+        {
+            config.AddUserSecrets<OrleansBook.Host.Program>();
+        });
+
+        hb.UseOrleans((context, builder) => 
+        {
+            builder
+                //.AddApplicationInsightsTelemetryConsumer("INSTRUMENTATION_KEY")
+                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RobotGrain).Assembly).WithReferences())
+                .UseLocalhostClustering()
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Warning);
+                });
+
+            // Instrumentation
+            builder.UseDashboard();
+            // Stats are operating system specific
+            builder.UseLinuxEnvironmentStatistics(); // for Linux via Microsoft.Orleans.OrleansTelemetryConsumers.Linux
+            //builder.UsePerfCounterEnvironmentStatistics(); // for Windows via Microsoft.Orleans.OrleansTelemetryConsumers.Counters
+            
+            // Persistence
+            //builder.AddMemoryGrainStorage("robotStateStore");
+            builder.AddAzureBlobGrainStorage(
+                name: "robotStateStore",
+                configureOptions: options =>
+                {
+                    options.UseJson = true;
+                    options.ConfigureBlobServiceClient(context.Configuration.GetConnectionString("AzureBlobConnectionString"));
+                });  
+        });
+
+        return hb;
+    }             
 }
