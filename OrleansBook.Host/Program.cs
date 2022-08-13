@@ -53,14 +53,22 @@ public class Program
             //builder.UsePerfCounterEnvironmentStatistics(); // for Windows via Microsoft.Orleans.OrleansTelemetryConsumers.Counters
             
             // Persistence
-            //builder.AddMemoryGrainStorage("robotStateStore");
-            builder.AddAzureBlobGrainStorage(
-                name: "robotStateStore",
-                configureOptions: options =>
-                {
-                    options.UseJson = true;
-                    options.ConfigureBlobServiceClient(context.Configuration.GetConnectionString("AzureBlobConnectionString"));
-                });  
+            // builder.AddMemoryGrainStorage("robotStateStore");
+            //
+            // builder.AddAzureBlobGrainStorage(
+            //     name: "robotStateStore",
+            //     configureOptions: options =>
+            //     {
+            //         options.UseJson = true;
+            //         options.ConfigureBlobServiceClient(context.Configuration.GetConnectionString("AzureBlobConnectionString"));
+            //     });
+            //
+            builder.AddAdoNetGrainStorage("robotStateStore", options =>
+                 {
+                     options.Invariant = "Npgsql";
+                     options.ConnectionString = context.Configuration.GetConnectionString("PostgresConnectionString");
+                     options.UseJsonFormat = true;
+                 });  
         });
 
         return hb;
