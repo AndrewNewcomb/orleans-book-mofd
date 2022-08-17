@@ -63,12 +63,20 @@ public class Program
             //         options.ConfigureBlobServiceClient(context.Configuration.GetConnectionString("AzureBlobConnectionString"));
             //     });
             //
-            builder.AddAdoNetGrainStorage("robotStateStore", options =>
-                 {
-                     options.Invariant = "Npgsql";
-                     options.ConnectionString = context.Configuration.GetConnectionString("PostgresConnectionString");
-                     options.UseJsonFormat = true;
-                 });  
+            builder.AddAzureTableGrainStorage(
+                name: "robotStateStore",
+                configureOptions: options =>
+                {
+                    options.UseJson = true;
+                    options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
+                });
+            //
+            // builder.AddAdoNetGrainStorage("robotStateStore", options =>
+            //      {
+            //          options.Invariant = "Npgsql";
+            //          options.ConnectionString = context.Configuration.GetConnectionString("PostgresConnectionString");
+            //          options.UseJsonFormat = true;
+            //      });  
         });
 
         return hb;
