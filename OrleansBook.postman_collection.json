@@ -1,0 +1,66 @@
+{
+	"info": {
+		"_postman_id": "5afbfb57-2760-4087-a7ff-4dfb483b338e",
+		"name": "OrleansBook",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET next instruction",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://127.0.0.1:7055/robot/ROBBIE/instruction",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "7055",
+					"path": [
+						"robot",
+						"ROBBIE",
+						"instruction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add instruction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"instruction\":\"Tea please.\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:7055/robot/ROBBIE/instruction",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "7055",
+					"path": [
+						"robot",
+						"ROBBIE",
+						"instruction"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

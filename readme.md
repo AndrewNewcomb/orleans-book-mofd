@@ -4,10 +4,67 @@
 - Setting log level from appsettings.json. Can only control it from code.
 
 # Orleans Dashboard
-Available at http://localhost:8080  
-https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md
+Dashboard visibile at http://localhost:8080. See [Orleans dashboard readme](https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md) for more information.
 
 
-# WebApi
-Cannot use Firefox as it doesn't trust the certificate.
+# OrleansBook.Host
+Console app that hosts the silo.
+
+# OrleansBook.Client
+Console app that acts as a client and can create an instruction and get a count of instructions.
+
+# OrleansBook.WebApi
+WepApi that can GET the next instruction, and POST a new instruction.
+
 Edge works, but shows https as not secure.
+Cannot use Firefox as it doesn't trust the certificate.
+Example usage in Postman collection `OrleansBook.postman_collection.json`
+
+Example curl commands. 
+If running locally you may get `curl: (60) SSL certificate problem` in which case add a `-k` parameter to disable the certificate check. Or fix the problem as specified for [Linux](https://curl.haxx.se/docs/sslcerts.html) or [Windows](https://curl.se/docs/sslcerts.html)
+
+```
+curl -X POST  \
+-H 'Content-Type: application/json' \
+--data-raw '{"instruction":"Tea please."}' \
+'https://127.0.0.1:7055/robot/robbie/instruction'
+
+curl https://127.0.0.1:7055/robot/robbie/instruction
+```
+
+## Persistence
+OrleansBook.Host can be configured to use Memory, AzureBlob, AzureTable, or Postgresql persistence. When running locally, the relevant connection string will need to be set up in local secrets.
+```
+dotnet user-secrets set {key} {connection string}
+```
+
+The keys are
+```
+'ConnectionStrings:PostgresConnectionString'
+'ConnectionStrings:AzureTableConnectionString'
+'ConnectionStrings:AzureBlobConnectionString'
+```
+
+
+
+### Azure
+If using Azure blob or table storage you only need the connection string to the storage, you can get this from the Azure Portal.
+
+### Postgresql
+If using postgreq then a database will need creating and configuring, as [per the docs](https://dotnet.github.io/orleans/docs/host/configuration_guide/adonet_configuration.html). The SQL scripts in folder `./Postgres` will create a  database called `orleansbook`, set up the tables, roles, and a user called `orleansbookuser` (needs a password). 
+
+The connection string will be in the format
+```
+host=127.0.0.1;database=orleansbook;username=orleansbookuser;password=???????
+```
+
+
+Useful commands for postgres
+```
+sudo service postgresql status
+sudo service postgresql start
+sudo service postgresql stop
+
+sudo -u postgres psql orleansbook
+```
+

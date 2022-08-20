@@ -12,4 +12,9 @@ cd ../OrleansBook.Host
 dotnet build
 
 cd ../OrleansBook.Client
-dotnet build 
+dotnet build
+
+cd ../OrleansBook.WebApi
+dotnet build
+
+cd ..
