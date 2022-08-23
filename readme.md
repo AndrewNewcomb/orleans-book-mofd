@@ -1,20 +1,23 @@
-# 'Microsoft Orleans for Developers' book
-
-# Problems
-- Setting log level from appsettings.json. Can only control it from code.
-
-# Orleans Dashboard
-Dashboard visibile at http://localhost:8080. See [Orleans dashboard readme](https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md) for more information.
+# orleans-book
+Example code from the 'Microsoft Orleans for Developers' book. Published by Apress, Richard Astbury
 
 
-# OrleansBook.Host
-Console app that hosts the silo.
+# Projects
 
-# OrleansBook.Client
-Console app that acts as a client and can create an instruction and get a count of instructions.
+## OrleansBook.GrainClasses 
+Assembly that contains the business logic. 
 
-# OrleansBook.WebApi
-WepApi that can GET the next instruction, and POST a new instruction.
+## OrleansBook.GrainInterfaces
+Assembly of interface definitions for use by clients. 
+
+## OrleansBook.Host
+Console app that hosts the silo. It uses the GrainClasses. 
+
+## OrleansBook.Client
+Console app that acts as a client and can create an instruction and get a count of instructions. Uses GrainInterfaces.
+
+## OrleansBook.WebApi
+WepApi that can GET the next instruction, and POST a new instruction. Uses GrainInterfaces.
 
 Edge works, but shows https as not secure.
 Cannot use Firefox as it doesn't trust the certificate.
@@ -32,7 +35,10 @@ curl -X POST  \
 curl https://127.0.0.1:7055/robot/robbie/instruction
 ```
 
-## Persistence
+## OrleansBook.Test
+Test project that tests login in the GrainClasses. Uses an `ISiloConfigurator` to run a silo in memory.
+
+# Persistence
 OrleansBook.Host can be configured to use Memory, AzureBlob, AzureTable, or Postgresql persistence. When running locally, the relevant connection string will need to be set up in local secrets.
 ```
 dotnet user-secrets set {key} {connection string}
@@ -45,12 +51,10 @@ The keys are
 'ConnectionStrings:AzureBlobConnectionString'
 ```
 
-
-
-### Azure
+## Azure
 If using Azure blob or table storage you only need the connection string to the storage, you can get this from the Azure Portal.
 
-### Postgresql
+## Postgresql
 If using postgreq then a database will need creating and configuring, as [per the docs](https://dotnet.github.io/orleans/docs/host/configuration_guide/adonet_configuration.html). The SQL scripts in folder `./Postgres` will create a  database called `orleansbook`, set up the tables, roles, and a user called `orleansbookuser` (needs a password). 
 
 The connection string will be in the format
@@ -68,3 +72,11 @@ sudo service postgresql stop
 sudo -u postgres psql orleansbook
 ```
 
+# Orleans Dashboard
+The instrumentation and stats packages, and their startup configuration are host OS specific. See comments in `OrleansBooh.Host/Program.cs`.
+
+Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md) for more information.
+
+
+# Problems
+- Setting log level from appsettings.json. Can only control it from code.
