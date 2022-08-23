@@ -16,5 +16,8 @@ dotnet build
 
 cd ../OrleansBook.WebApi
 dotnet build
+ 
+cd ../OrleansBook.Tests
+dotnet build
 
 cd ..
