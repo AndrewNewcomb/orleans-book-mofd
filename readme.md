@@ -80,3 +80,6 @@ Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https
 
 # Problems
 - Setting log level from appsettings.json. Can only control it from code.
+- Book has GetStreamProvider used from the grain constructor. 
+  - This gave 'Unhandled exception. System.ArgumentException: Passing a half baked grain as an argument. It is possible that you instantiated a grain class explicitly, as a regular object and not via Orleans runtime or via proper test mocking'
+  - Workaround was to set it on first use.

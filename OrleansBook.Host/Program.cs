@@ -46,14 +46,14 @@ public class Program
                     logging.SetMinimumLevel(LogLevel.Warning);
                 });
 
-            // Instrumentation
+            // Instrumentation -------------------
             builder.UseDashboard();
             // Stats are operating system specific
             builder.UseLinuxEnvironmentStatistics(); // for Linux via Microsoft.Orleans.OrleansTelemetryConsumers.Linux
             //builder.UsePerfCounterEnvironmentStatistics(); // for Windows via Microsoft.Orleans.OrleansTelemetryConsumers.Counters
             
-            // Persistence
-            // builder.AddMemoryGrainStorage("robotStateStore");
+            // Persistence -------------------
+            builder.AddMemoryGrainStorage("robotStateStore");
             //
             // builder.AddAzureBlobGrainStorage(
             //     name: "robotStateStore",
@@ -63,20 +63,25 @@ public class Program
             //         options.ConfigureBlobServiceClient(context.Configuration.GetConnectionString("AzureBlobConnectionString"));
             //     });
             //
-            builder.AddAzureTableGrainStorage(
-                name: "robotStateStore",
-                configureOptions: options =>
-                {
-                    options.UseJson = true;
-                    options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
-                });
+            // builder.AddAzureTableGrainStorage(
+            //     name: "robotStateStore",
+            //     configureOptions: options =>
+            //     {
+            //         options.UseJson = true;
+            //         options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
+            //     });
             //
             // builder.AddAdoNetGrainStorage("robotStateStore", options =>
             //      {
             //          options.Invariant = "Npgsql";
             //          options.ConnectionString = context.Configuration.GetConnectionString("PostgresConnectionString");
             //          options.UseJsonFormat = true;
-            //      });  
+            //      });
+
+            // Streaming -------------------
+            builder
+                .AddMemoryGrainStorage("PubSubStore")
+                .AddSimpleMessageStreamProvider("SMSProvider"); 
         });
 
         return hb;
