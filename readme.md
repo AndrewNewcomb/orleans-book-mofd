@@ -78,7 +78,7 @@ The instrumentation and stats packages, and their startup configuration are host
 Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md) for more information.
 
 
-# Problems
+# Problems / TODOs
 
 ## Chapter 4 Debugging
 - Setting log level from appsettings.json. It can be set from code, but how to set it from appsettings.json?
@@ -87,3 +87,8 @@ Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https
 - Book has GetStreamProvider used from the RobotGrain constructor. 
   - This gave 'Unhandled exception. System.ArgumentException: Passing a half baked grain as an argument. It is possible that you instantiated a grain class explicitly, as a regular object and not via Orleans runtime or via proper test mocking'
   - Fixed it by using making the calls from within OnActivateAsync.
+- Testing
+  - How to test that it that RobotGrain publishes to the stream? 
+  - How to test that the SubscriberGrain consumes messages? 
+  - How to test that the StreamSubscriber consumes messages? 
+  - Found some test code at https://github.com/dotnet/orleans/tree/main/test/Tester/StreamingTests
