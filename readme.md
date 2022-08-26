@@ -79,7 +79,11 @@ Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https
 
 
 # Problems
-- Setting log level from appsettings.json. Can only control it from code.
-- Book has GetStreamProvider used from the grain constructor. 
+
+## Chapter 4 Debugging
+- Setting log level from appsettings.json. It can be set from code, but how to set it from appsettings.json?
+
+## Chapter 9 Streams
+- Book has GetStreamProvider used from the RobotGrain constructor. 
   - This gave 'Unhandled exception. System.ArgumentException: Passing a half baked grain as an argument. It is possible that you instantiated a grain class explicitly, as a regular object and not via Orleans runtime or via proper test mocking'
-  - Workaround was to set it on first use.
+  - Fixed it by using making the calls from within OnActivateAsync.
