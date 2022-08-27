@@ -1,4 +1,6 @@
 using Orleans;
+using Orleans.Hosting;
+using OrleansBook.GrainInterfaces;
 
 internal class Program
 {
@@ -7,7 +9,7 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        var orleansClient = await ConnectToOrleans();
+        var orleansClient = await ConnectToOrleans(builder.Configuration);      
         builder.Services.AddSingleton<IClusterClient>(orleansClient);
 
         builder.Services.AddControllers();
@@ -33,13 +35,30 @@ internal class Program
         app.Run();
     }
 
-    private static async Task<IClusterClient> ConnectToOrleans()
+    private static async Task<IClusterClient> ConnectToOrleans(ConfigurationManager configManager)
     {
         var client = new ClientBuilder()
-            .UseLocalhostClustering()
+            .UseLocalhostClustering()                        
+            .AddSimpleMessageStreamProvider("SMSProvider")
+            // .AddAzureQueueStreams("SMSProvider", configurator => 
+            //     {
+            //         configurator.ConfigureAzureQueue(
+            //             ob => ob.Configure(options =>
+            //             {
+            //                 options.ConfigureQueueServiceClient(configManager.GetConnectionString("AzureQueueConnectionString"));
+            //                 options.QueueNames = new List<string> { "orleans-stream-azurequeueprovider-0" };
+            //             }));
+            //     }
+            // )
             .Build();
 
         await client.Connect();
+
+        await client
+            .GetStreamProvider("SMSProvider")
+            .GetStream<InstructionMessage>(Guid.Empty, "StartingInstruction")
+            .SubscribeAsync(new StreamSubscriber());
+
         return client;
     }
 }

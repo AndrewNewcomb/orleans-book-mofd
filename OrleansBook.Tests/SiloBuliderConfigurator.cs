@@ -12,7 +12,10 @@ class SiloBuliderConfigurator : ISiloConfigurator
 {
     public void Configure(ISiloBuilder siloBuilder)
     {
-        siloBuilder.AddMemoryGrainStorage("robotStateStore");
+        siloBuilder
+            .AddMemoryGrainStorage("robotStateStore")
+            .AddMemoryGrainStorage("PubSubStore")
+            .AddSimpleMessageStreamProvider("SMSProvider");
 
         var mockState = new Mock<IPersistentState<RobotState>>();
         mockState.Setup(s => s.State).Returns(new RobotState());
