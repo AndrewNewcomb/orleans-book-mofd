@@ -51,8 +51,16 @@ The keys are
 'ConnectionStrings:AzureBlobConnectionString'
 ```
 
+# Streams
+OrleansBook.Host and OrleansBook.WebApi can be configured to use Memory or AzureQueue stream providers. Other stream providers are available but have not been tried.
+
+If using AzureQueue its connection string needs setting as a user secret, with key 
+```
+'ConnectionStrings:AzureQueueConnectionString'
+``` 
+
 ## Azure
-If using Azure blob or table storage you only need the connection string to the storage, you can get this from the Azure Portal.
+If using Azure blob, table, or queue you can get the connection string from the Azure Portal.
 
 ## Postgresql
 If using postgreq then a database will need creating and configuring, as [per the docs](https://dotnet.github.io/orleans/docs/host/configuration_guide/adonet_configuration.html). The SQL scripts in folder `./Postgres` will create a  database called `orleansbook`, set up the tables, roles, and a user called `orleansbookuser` (needs a password). 

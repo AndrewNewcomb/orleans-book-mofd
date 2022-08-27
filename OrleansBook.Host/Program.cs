@@ -78,10 +78,36 @@ public class Program
             //          options.UseJsonFormat = true;
             //      });
 
+            // Streaming meta database -------------------
+            //builder.AddMemoryGrainStorage("PubSubStore");
+            builder.AddAzureTableGrainStorage(
+                name: "PubSubStore",
+                configureOptions: options =>
+                {
+                    options.UseJson = true;
+                    options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
+                });
+
+            //
             // Streaming -------------------
-            builder
-                .AddMemoryGrainStorage("PubSubStore")
-                .AddSimpleMessageStreamProvider("SMSProvider"); 
+            // builder.AddSimpleMessageStreamProvider("SMSProvider"); 
+            //
+            // https://docs.microsoft.com/en-us/dotnet/orleans/implementation/streams-implementation/azure-queue-streams
+            builder.AddAzureQueueStreams("SMSProvider", configurator => 
+                {
+                    configurator.ConfigureAzureQueue(
+                        ob => ob.Configure(options =>
+                        {
+                            options.ConfigureQueueServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
+                            options.QueueNames = new List<string> { "orleans-stream-azurequeueprovider-0" };
+                        }));
+                    configurator.ConfigureCacheSize(1024);
+                    configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+                        {
+                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(200);
+                        }));
+                }
+            );
         });
 
         return hb;
