@@ -9,7 +9,7 @@ using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
 
-public class RobotGrain : Grain, IRobotGrain
+public class RobotGrain : Grain, IRobotGrain, IRemindable
 {
     private readonly IPersistentState<RobotState> state;
     private readonly ILogger<RobotGrain> logger;
@@ -37,8 +37,13 @@ public class RobotGrain : Grain, IRobotGrain
            .GetStreamProvider("SMSProvider")
            .GetStream<InstructionMessage>(Guid.Empty, "StartingInstruction");
 
+        // timer only fires if grain is running
         var oneMinute = TimeSpan.FromMinutes(1);
         this.RegisterTimer(this.ResetStats, null, oneMinute, oneMinute);
+
+        // reminder will start grain if not already running
+        var oneDay = TimeSpan.FromDays(1);
+        await this.RegisterOrUpdateReminder("firmware", oneDay, oneDay);
 
         await base.OnActivateAsync();
     }  
@@ -78,6 +83,17 @@ public class RobotGrain : Grain, IRobotGrain
 
         await this.state.WriteStateAsync();
         return instruction;
+    }
+
+    public Task ReceiveReminder(string reminderName, Orleans.Runtime.TickStatus status)
+    {
+        if(reminderName == "firmware")
+        {
+            Console.WriteLine($"{this.key} {DateTime.Now} received reminder");
+            return this.AddInstruction("Update firmware");
+        }
+
+        return Task.CompletedTask;
     }
 
     private Task ResetStats(object _)
