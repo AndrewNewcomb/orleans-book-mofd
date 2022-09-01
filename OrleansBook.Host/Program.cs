@@ -110,11 +110,11 @@ public class Program
             // );
 
             // Reminders -------------------
-            //builder.UseInMemoryReminderService();
+            builder.UseInMemoryReminderService();
             //
-            builder.UseAzureTableReminderService(
-                options => options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"))
-            );
+            //builder.UseAzureTableReminderService(
+            //    options => options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"))
+            //);
         });
 
         return hb;
