@@ -16,6 +16,9 @@ public class RobotGrain : Grain, IRobotGrain
     private string key;
     private IAsyncStream<InstructionMessage>? stream;
 
+    int instructionsEnqueued = 0;
+    int instructionsDequeued = 0;
+
 
     public RobotGrain(ILogger<RobotGrain> logger, 
         [PersistentState("robotState", "robotStateStore")]
@@ -34,6 +37,9 @@ public class RobotGrain : Grain, IRobotGrain
            .GetStreamProvider("SMSProvider")
            .GetStream<InstructionMessage>(Guid.Empty, "StartingInstruction");
 
+        var oneMinute = TimeSpan.FromMinutes(1);
+        this.RegisterTimer(this.ResetStats, null, oneMinute, oneMinute);
+
         await base.OnActivateAsync();
     }  
 
@@ -48,6 +54,7 @@ public class RobotGrain : Grain, IRobotGrain
         this.logger.LogDebug("{Key} adding '{Instruction}'", this.key, instruction);
 
         this.state.State.Instructions.Enqueue(instruction);
+        this.instructionsEnqueued += 1;
         await this.state.WriteStateAsync();
     }
 
@@ -67,8 +74,21 @@ public class RobotGrain : Grain, IRobotGrain
         this.logger.LogDebug("{Key} next '{Instruction}'", this.key, instruction);
 
         await this.Publish(instruction);
+        this.instructionsDequeued += 1;
 
         await this.state.WriteStateAsync();
         return instruction;
+    }
+
+    private Task ResetStats(object _)
+    {
+        Console.WriteLine($"{key} enqueued: {this.instructionsEnqueued}");
+        Console.WriteLine($"{key} dequeued: {this.instructionsDequeued}");
+        Console.WriteLine($"{key} queued:   {this.state.State.Instructions.Count}");
+
+        this.instructionsEnqueued = 0;
+        this.instructionsDequeued = 0;
+
+        return Task.CompletedTask;
     }
 }
