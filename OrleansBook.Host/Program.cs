@@ -115,6 +115,16 @@ public class Program
             //builder.UseAzureTableReminderService(
             //    options => options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"))
             //);
+            
+            // Transactions --- yes really, distributed transactions ---
+            builder
+                .AddAzureTableTransactionalStateStorage(
+                    name: "TransactionStore",
+                    configureOptions: options =>
+                    {
+                        options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
+                    })
+                .UseTransactions();
         });
 
         return hb;

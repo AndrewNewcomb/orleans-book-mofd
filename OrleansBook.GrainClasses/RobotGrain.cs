@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Streams;
+using Orleans.Transactions.Abstractions;
 using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
@@ -14,14 +15,14 @@ public class RobotGrain : Grain, IRobotGrain
     // The timers and reminders added in branch chapter10_timers_and_reminders
     // were removed in chapter11_transactions to cut down on noise.
 
-    private readonly IPersistentState<RobotState> state;
+    private readonly ITransactionalState<RobotState> state; // was IPersistentState<RobotState>
     private readonly ILogger<RobotGrain> logger;
     private string key;
     private IAsyncStream<InstructionMessage>? stream;
 
     public RobotGrain(ILogger<RobotGrain> logger, 
-        [PersistentState("robotState", "robotStateStore")]
-        IPersistentState<RobotState> state)
+        [TransactionalState("robotState", "robotStateStore")] // was PersistentState
+        ITransactionalState<RobotState> state) // was IPersistentState
     {
         this.logger = logger;
         this.state = state;
@@ -49,28 +50,40 @@ public class RobotGrain : Grain, IRobotGrain
     {
         this.logger.LogDebug("{Key} adding '{Instruction}'", this.key, instruction);
 
-        this.state.State.Instructions.Enqueue(instruction);
-        await this.state.WriteStateAsync();
+        // was
+        // this.state.State.Instructions.Enqueue(instruction);
+        // await this.state.WriteStateAsync();
+        //
+        await this.state.PerformUpdate(state =>
+            state.Instructions.Enqueue(instruction)
+        );
     }
 
-    public Task<int> GetInstructionCount()
+    public async Task<int> GetInstructionCount()
     {
-        return Task.FromResult(this.state.State.Instructions.Count);
+        // was
+        // return Task.FromResult(this.state.State.Instructions.Count);
+        //
+        return await this.state.PerformUpdate(state =>
+            state.Instructions.Count
+        );        
     }
 
     public async Task<string?> GetNextInstruction()
     {
-        if(this.state.State.Instructions.Count == 0)
+        string? instruction = null;
+        await this.state.PerformUpdate(state => 
         {
-            return null;
+            if(state.Instructions.Count == 0) return;
+            instruction = state.Instructions.Dequeue();
+        });
+
+        if(null != instruction)
+        {
+            this.logger.LogDebug("{Key} next '{Instruction}'", this.key, instruction);
+            await this.Publish(instruction);
         }
 
-        var instruction = this.state.State.Instructions.Dequeue();
-        this.logger.LogDebug("{Key} next '{Instruction}'", this.key, instruction);
-
-        await this.Publish(instruction);
-
-        await this.state.WriteStateAsync();
         return instruction;
     }
 }
