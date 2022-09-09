@@ -9,16 +9,15 @@ using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
 
-public class RobotGrain : Grain, IRobotGrain, IRemindable
+public class RobotGrain : Grain, IRobotGrain
 {
+    // The timers and reminders added in branch chapter10_timers_and_reminders
+    // were removed in chapter11_transactions to cut down on noise.
+
     private readonly IPersistentState<RobotState> state;
     private readonly ILogger<RobotGrain> logger;
     private string key;
     private IAsyncStream<InstructionMessage>? stream;
-
-    int instructionsEnqueued = 0;
-    int instructionsDequeued = 0;
-
 
     public RobotGrain(ILogger<RobotGrain> logger, 
         [PersistentState("robotState", "robotStateStore")]
@@ -37,14 +36,6 @@ public class RobotGrain : Grain, IRobotGrain, IRemindable
            .GetStreamProvider("SMSProvider")
            .GetStream<InstructionMessage>(Guid.Empty, "StartingInstruction");
 
-        // timer only fires if grain is running
-        var oneMinute = TimeSpan.FromMinutes(1);
-        this.RegisterTimer(this.ResetStats, null, oneMinute, oneMinute);
-
-        // reminder will start grain if not already running
-        var oneDay = TimeSpan.FromDays(1);
-        await this.RegisterOrUpdateReminder("firmware", oneDay, oneDay);
-
         await base.OnActivateAsync();
     }  
 
@@ -59,7 +50,6 @@ public class RobotGrain : Grain, IRobotGrain, IRemindable
         this.logger.LogDebug("{Key} adding '{Instruction}'", this.key, instruction);
 
         this.state.State.Instructions.Enqueue(instruction);
-        this.instructionsEnqueued += 1;
         await this.state.WriteStateAsync();
     }
 
@@ -79,32 +69,8 @@ public class RobotGrain : Grain, IRobotGrain, IRemindable
         this.logger.LogDebug("{Key} next '{Instruction}'", this.key, instruction);
 
         await this.Publish(instruction);
-        this.instructionsDequeued += 1;
 
         await this.state.WriteStateAsync();
         return instruction;
-    }
-
-    public Task ReceiveReminder(string reminderName, Orleans.Runtime.TickStatus status)
-    {
-        if(reminderName == "firmware")
-        {
-            Console.WriteLine($"{this.key} {DateTime.Now} received reminder");
-            return this.AddInstruction("Update firmware");
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private Task ResetStats(object _)
-    {
-        Console.WriteLine($"{key} enqueued: {this.instructionsEnqueued}");
-        Console.WriteLine($"{key} dequeued: {this.instructionsDequeued}");
-        Console.WriteLine($"{key} queued:   {this.state.State.Instructions.Count}");
-
-        this.instructionsEnqueued = 0;
-        this.instructionsDequeued = 0;
-
-        return Task.CompletedTask;
     }
 }
