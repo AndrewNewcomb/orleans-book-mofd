@@ -13,7 +13,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.6.2" />
-    <PackageReference Include="Microsoft.Orleans.Runtime.Abstractions" Version="3.6.2" /> 
+    <PackageReference Include="Microsoft.Orleans.Runtime.Abstractions" Version="3.6.2" />
+    <PackageReference Include="Microsoft.Orleans.Transactions" Version="3.6.2" />  
   </ItemGroup>
 
   <ItemGroup>

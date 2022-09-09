@@ -5,24 +5,24 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Streams;
+using Orleans.Transactions.Abstractions;
 using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
 
-public class RobotGrain : Grain, IRobotGrain, IRemindable
+public class RobotGrain : Grain, IRobotGrain
 {
-    private readonly IPersistentState<RobotState> state;
+    // The timers and reminders added in branch chapter10_timers_and_reminders
+    // were removed in chapter11_transactions to cut down on noise.
+
+    private readonly ITransactionalState<RobotState> state; // was IPersistentState<RobotState>
     private readonly ILogger<RobotGrain> logger;
     private string key;
     private IAsyncStream<InstructionMessage>? stream;
 
-    int instructionsEnqueued = 0;
-    int instructionsDequeued = 0;
-
-
     public RobotGrain(ILogger<RobotGrain> logger, 
-        [PersistentState("robotState", "robotStateStore")]
-        IPersistentState<RobotState> state)
+        [TransactionalState("robotState", "robotStateStore")] // was PersistentState
+        ITransactionalState<RobotState> state) // was IPersistentState
     {
         this.logger = logger;
         this.state = state;
@@ -37,14 +37,6 @@ public class RobotGrain : Grain, IRobotGrain, IRemindable
            .GetStreamProvider("SMSProvider")
            .GetStream<InstructionMessage>(Guid.Empty, "StartingInstruction");
 
-        // timer only fires if grain is running
-        var oneMinute = TimeSpan.FromMinutes(1);
-        this.RegisterTimer(this.ResetStats, null, oneMinute, oneMinute);
-
-        // reminder will start grain if not already running
-        var oneDay = TimeSpan.FromDays(1);
-        await this.RegisterOrUpdateReminder("firmware", oneDay, oneDay);
-
         await base.OnActivateAsync();
     }  
 
@@ -58,53 +50,40 @@ public class RobotGrain : Grain, IRobotGrain, IRemindable
     {
         this.logger.LogDebug("{Key} adding '{Instruction}'", this.key, instruction);
 
-        this.state.State.Instructions.Enqueue(instruction);
-        this.instructionsEnqueued += 1;
-        await this.state.WriteStateAsync();
+        // was
+        // this.state.State.Instructions.Enqueue(instruction);
+        // await this.state.WriteStateAsync();
+        //
+        await this.state.PerformUpdate(state =>
+            state.Instructions.Enqueue(instruction)
+        );
     }
 
-    public Task<int> GetInstructionCount()
+    public async Task<int> GetInstructionCount()
     {
-        return Task.FromResult(this.state.State.Instructions.Count);
+        // was
+        // return Task.FromResult(this.state.State.Instructions.Count);
+        //
+        return await this.state.PerformUpdate(state =>
+            state.Instructions.Count
+        );        
     }
 
     public async Task<string?> GetNextInstruction()
     {
-        if(this.state.State.Instructions.Count == 0)
+        string? instruction = null;
+        await this.state.PerformUpdate(state => 
         {
-            return null;
+            if(state.Instructions.Count == 0) return;
+            instruction = state.Instructions.Dequeue();
+        });
+
+        if(null != instruction)
+        {
+            this.logger.LogDebug("{Key} next '{Instruction}'", this.key, instruction);
+            await this.Publish(instruction);
         }
 
-        var instruction = this.state.State.Instructions.Dequeue();
-        this.logger.LogDebug("{Key} next '{Instruction}'", this.key, instruction);
-
-        await this.Publish(instruction);
-        this.instructionsDequeued += 1;
-
-        await this.state.WriteStateAsync();
         return instruction;
-    }
-
-    public Task ReceiveReminder(string reminderName, Orleans.Runtime.TickStatus status)
-    {
-        if(reminderName == "firmware")
-        {
-            Console.WriteLine($"{this.key} {DateTime.Now} received reminder");
-            return this.AddInstruction("Update firmware");
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private Task ResetStats(object _)
-    {
-        Console.WriteLine($"{key} enqueued: {this.instructionsEnqueued}");
-        Console.WriteLine($"{key} dequeued: {this.instructionsDequeued}");
-        Console.WriteLine($"{key} queued:   {this.state.State.Instructions.Count}");
-
-        this.instructionsEnqueued = 0;
-        this.instructionsDequeued = 0;
-
-        return Task.CompletedTask;
     }
 }

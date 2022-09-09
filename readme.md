@@ -1,5 +1,5 @@
 # orleans-book
-Example code from the 'Microsoft Orleans for Developers' book. Published by Apress, Richard Astbury
+Example code from the 'Microsoft Orleans for Developers' book. Published by Apress, written by Richard Astbury
 
 
 # Projects
@@ -33,10 +33,15 @@ curl -X POST  \
 'https://127.0.0.1:7055/robot/robbie/instruction'
 
 curl https://127.0.0.1:7055/robot/robbie/instruction
+
+curl -X POST  \
+-H 'Content-Type: application/json' \
+--data-raw '{"hal":"Open the doors.", "mabel":"Biscuits please."}' \
+'https://127.0.0.1:7055/batch'
 ```
 
 ## OrleansBook.Test
-Test project that tests login in the GrainClasses. Uses an `ISiloConfigurator` to run a silo in memory.
+Test project that tests behaviour of the RobotGrain class. Uses an `ISiloConfigurator` to run a silo in memory.
 
 # Persistence
 OrleansBook.Host can be configured to use Memory, AzureBlob, AzureTable, or Postgresql persistence. When running locally, the relevant connection string will need to be set up in local secrets.
@@ -100,3 +105,6 @@ Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https
   - How to test that the SubscriberGrain consumes messages? 
   - How to test that the StreamSubscriber consumes messages? 
   - Found some test code at https://github.com/dotnet/orleans/tree/main/test/Tester/StreamingTests
+
+## Chapter 10 Transactions
+- Find out more about Orleans' implementation of distributed transactions. Is it too good to be true?
