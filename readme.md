@@ -168,3 +168,9 @@ You can see the `Apply` methods in the `EventSourcedState` class being called to
 
 There is also a `builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage");` but I've not tried it.
 
+## Chapter 13 Optimizations
+
+Added a slow running method on the RobotGrain, but with a cancellation token so it can be cancelled.  
+Exposed on the WebApi as `robot/{name}/doSomethingSlow/{slowTaskTimeSeconds}/{secondsToWaitBeforeCancelling}`
+- To let the task complete: `curl -k https://127.0.0.1:7055/robot/robbie/doSomethingSlow/3/6`
+- To cancel the task before completion: `curl -k https://127.0.0.1:7055/robot/robbie/doSomethingSlow/6/3`

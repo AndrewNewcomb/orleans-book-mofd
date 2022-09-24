@@ -86,4 +86,15 @@ public class RobotGrain : Grain, IRobotGrain
 
         return instruction;
     }
+
+    public async Task<bool> DoSomethingSlow(int slowTaskTimeSeconds, GrainCancellationToken token)
+    {
+        for(var i = 0; i < slowTaskTimeSeconds; i++)
+        {
+            await Task.Delay(1000, token.CancellationToken);
+            if(token.CancellationToken.IsCancellationRequested) break;           
+        }
+
+        return token.CancellationToken.IsCancellationRequested;
+    }
 }

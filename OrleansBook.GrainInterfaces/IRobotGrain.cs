@@ -13,4 +13,7 @@ public interface IRobotGrain : IGrainWithStringKey
     
     [Transaction(TransactionOption.CreateOrJoin)]
     Task<int> GetInstructionCount();
+
+    [Transaction(TransactionOption.NotAllowed)]
+    Task<bool> DoSomethingSlow(int slowTaskTimeSeconds, GrainCancellationToken cancellationToken);
 }
