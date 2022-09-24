@@ -21,7 +21,7 @@ public class RobotsController : ControllerBase
     [Route("robot/{name}/instruction")]
     public async Task<string?> Get(string name)
     {
-        var grain = _client.GetGrain<IRobotGrain>(name);
+        var grain = _client.GetGrain<IRobotGrain>(name, "OrleansBook.GrainClasses.EventSourcedGrain");
 
         return await grain.GetNextInstruction();
     }
@@ -33,7 +33,7 @@ public class RobotsController : ControllerBase
         if(!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var grain = _client.GetGrain<IRobotGrain>(name);
+        var grain = _client.GetGrain<IRobotGrain>(name, "OrleansBook.GrainClasses.EventSourcedGrain");
         await grain.AddInstruction(request.Instruction);
         return Ok();    
     }
