@@ -24,18 +24,18 @@ Cannot use Firefox as it doesn't trust the certificate.
 Example usage in Postman collection `OrleansBook.postman_collection.json`
 
 Example curl commands. 
-If running locally you may get `curl: (60) SSL certificate problem` in which case add a `-k` parameter to disable the certificate check. Or fix the problem as specified for [Linux](https://curl.haxx.se/docs/sslcerts.html) or [Windows](https://curl.se/docs/sslcerts.html)
+Had a problem running locally with `curl: (60) SSL certificate problem` so disabled the certificate check with `-k`. Looks to be a proper fix as specified for [Linux](https://curl.haxx.se/docs/sslcerts.html) or [Windows](https://curl.se/docs/sslcerts.html)
 
 ```
 curl -X POST  \
--H 'Content-Type: application/json' \
+-k -H 'Content-Type: application/json' \
 --data-raw '{"instruction":"Tea please."}' \
 'https://127.0.0.1:7055/robot/robbie/instruction'
 
-curl https://127.0.0.1:7055/robot/robbie/instruction
+curl -k https://127.0.0.1:7055/robot/robbie/instruction
 
 curl -X POST  \
--H 'Content-Type: application/json' \
+-k -H 'Content-Type: application/json' \
 --data-raw '{"hal":"Open the doors.", "mabel":"Biscuits please."}' \
 'https://127.0.0.1:7055/batch'
 ```
@@ -106,5 +106,65 @@ Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https
   - How to test that the StreamSubscriber consumes messages? 
   - Found some test code at https://github.com/dotnet/orleans/tree/main/test/Tester/StreamingTests
 
-## Chapter 10 Transactions
+## Chapter 11 Transactions
 - Find out more about Orleans' implementation of distributed transactions. Is it too good to be true?
+
+## Chapter 12 Event Sourcing
+Code as per the book but with the `robotStateStore` set to write to Azure Table Storage did write metadata to storage but didn't have any of the instructions state data. This means the queue of instructions is lost if the host restarts.
+
+```json
+{
+    "$id": "1",
+    "$type": "Orleans.EventSourcing.StateStorage.GrainStateWithMetaData`1[[OrleansBook.GrainClasses.EventSourcedState, OrleansBook.GrainClasses]], Orleans.EventSourcing",
+    "State": {
+        "$id": "2",
+        "$type": "OrleansBook.GrainClasses.EventSourcedState, OrleansBook.GrainClasses",
+        "Count": 1
+    },
+    "GlobalVersion": 5,
+    "WriteVector": ",dev"
+}
+```
+
+Added `builder.AddStateStorageBasedLogConsistencyProvider("EventStorage");` to the host configuration and the `[LogConsistencyProvider(ProviderName = "EventStorage")]` attribute on the `EventSourcedGrain`. It gave the same structure as above so looks to be the default.
+
+
+Changed to `builder.AddLogStorageBasedLogConsistencyProvider("EventStorage");` which did result in the the event history being persisted.
+You can see the `Apply` methods in the `EventSourcedState` class being called to load the state when the grain is started.
+
+```json
+{
+    "$id": "1",
+    "$type": "Orleans.EventSourcing.LogStorage.LogStateWithMetaData`1[[OrleansBook.GrainClasses.IEvent, OrleansBook.GrainClasses]], Orleans.EventSourcing",
+    "Log": {
+        "$type": "System.Collections.Generic.List`1[[OrleansBook.GrainClasses.IEvent, OrleansBook.GrainClasses]], System.Private.CoreLib",
+        "$values": [{
+                "$id": "2",
+                "$type": "OrleansBook.GrainClasses.EnqueueEvent, OrleansBook.GrainClasses",
+                "Value": "Tea please."
+            }, {
+                "$id": "3",
+                "$type": "OrleansBook.GrainClasses.EnqueueEvent, OrleansBook.GrainClasses",
+                "Value": "More tea please."
+            }, {
+                "$id": "4",
+                "$type": "OrleansBook.GrainClasses.DequeueEvent, OrleansBook.GrainClasses",
+                "Value": "Tea please."
+            }, {
+                "$id": "5",
+                "$type": "OrleansBook.GrainClasses.DequeueEvent, OrleansBook.GrainClasses",
+                "Value": "More tea please."
+            }, {
+                "$id": "6",
+                "$type": "OrleansBook.GrainClasses.EnqueueEvent, OrleansBook.GrainClasses",
+                "Value": "Yet more tea please."
+            }
+        ]
+    },
+    "GlobalVersion": 5,
+    "WriteVector": ",dev"
+}
+```
+
+There is also a `builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage");` but I've not tried it.
+

@@ -5,7 +5,12 @@ using Orleans.Providers;
 
 namespace OrleansBook.GrainClasses;
 
+// https://learn.microsoft.com/en-us/dotnet/orleans/grains/event-sourcing/journaledgrain-basics
+// https://dotnet.github.io/orleans/docs/grains/event_sourcing/log_consistency_providers.html
+// https://dotnet.github.io/orleans/docs/grains/event_sourcing/event_sourcing_configuration.html
+
 [StorageProvider(ProviderName = "robotStateStore")]
+[LogConsistencyProvider(ProviderName = "EventStorage")]
 public class EventSourcedGrain : JournaledGrain<EventSourcedState, IEvent>, IRobotGrain
 {
     public async Task AddInstruction(string instruction) 

@@ -53,7 +53,7 @@ public class Program
             //builder.UsePerfCounterEnvironmentStatistics(); // for Windows via Microsoft.Orleans.OrleansTelemetryConsumers.Counters
             
             // Persistence -------------------
-            builder.AddMemoryGrainStorage("robotStateStore");
+            // builder.AddMemoryGrainStorage("robotStateStore");
             //
             // builder.AddAzureBlobGrainStorage(
             //     name: "robotStateStore",
@@ -63,13 +63,13 @@ public class Program
             //         options.ConfigureBlobServiceClient(context.Configuration.GetConnectionString("AzureBlobConnectionString"));
             //     });
             //
-            // builder.AddAzureTableGrainStorage(
-            //     name: "robotStateStore",
-            //     configureOptions: options =>
-            //     {
-            //         options.UseJson = true;
-            //         options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
-            //     });
+            builder.AddAzureTableGrainStorage(
+                name: "robotStateStore",
+                configureOptions: options =>
+                {
+                    options.UseJson = true;
+                    options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
+                });
             //
             // builder.AddAdoNetGrainStorage("robotStateStore", options =>
             //      {
@@ -125,6 +125,12 @@ public class Program
                         options.ConfigureTableServiceClient(context.Configuration.GetConnectionString("AzureTableConnectionString"));
                     })
                 .UseTransactions();
+
+            // Event Sourcing -------------------
+            // If LogConsistencyProvider is not specified it defaults to the state storage provider
+            // builder.AddStateStorageBasedLogConsistencyProvider("EventStorage"); // does not store the latest state
+            builder.AddLogStorageBasedLogConsistencyProvider("EventStorage"); // stores history of events            
+            // builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage"); // not tried this one 
         });
 
         return hb;
