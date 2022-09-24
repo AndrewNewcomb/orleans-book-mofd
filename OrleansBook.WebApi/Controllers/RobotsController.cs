@@ -37,4 +37,27 @@ public class RobotsController : ControllerBase
         await grain.AddInstruction(request.Instruction);
         return Ok();    
     }
+
+    [HttpGet]
+    [Route("robot/{name}/doSomethingSlow/{slowTaskTimeSeconds}/{secondsToWaitBeforeCancelling}")]
+    public async Task<string> DoSomethingSlow(string name, int slowTaskTimeSeconds, int secondsToWaitBeforeCancelling)
+    {
+        var grain = _client.GetGrain<IRobotGrain>(name, "OrleansBook.GrainClasses.EventSourcedGrain");
+
+        using var tcs = new GrainCancellationTokenSource();
+        var slowTask = grain.DoSomethingSlow(slowTaskTimeSeconds, tcs.Token);
+
+        var cancelTask = CancelAfterNSeconds(tcs, secondsToWaitBeforeCancelling);
+        
+        await Task.WhenAll(slowTask, cancelTask);
+
+        var wasCancelled = slowTask.Result;
+        return wasCancelled ? "Request to grain was cancelled" : "Request to grain ran to completion";
+    }
+
+    private async Task CancelAfterNSeconds(GrainCancellationTokenSource tcs, int secondsToWaitBeforeCancelling)
+    {
+        await Task.Delay(secondsToWaitBeforeCancelling * 1000);
+        await tcs.Cancel();       
+    }
 }

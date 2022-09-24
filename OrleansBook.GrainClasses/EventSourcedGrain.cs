@@ -2,6 +2,7 @@ using System;
 using Orleans.EventSourcing;
 using OrleansBook.GrainInterfaces;
 using Orleans.Providers;
+using Orleans;
 
 namespace OrleansBook.GrainClasses;
 
@@ -30,5 +31,16 @@ public class EventSourcedGrain : JournaledGrain<EventSourcedState, IEvent>, IRob
         RaiseEvent(@event);
         await ConfirmEvents();
         return @event.Value;
+    }
+
+    public async Task<bool> DoSomethingSlow(int slowTaskTimeSeconds, GrainCancellationToken token)
+    {
+        for(var i = 0; i < slowTaskTimeSeconds; i++)
+        {
+            await Task.Delay(1000);
+            if(token.CancellationToken.IsCancellationRequested) break;           
+        }
+
+        return token.CancellationToken.IsCancellationRequested;
     }
 }
