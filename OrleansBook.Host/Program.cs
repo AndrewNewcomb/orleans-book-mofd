@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Statistics;
 using OrleansBook.GrainClases;
@@ -43,7 +44,7 @@ public class Program
                 .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
-                    logging.SetMinimumLevel(LogLevel.Warning);
+                    logging.SetMinimumLevel(LogLevel.Debug); // was Warning
                 });
 
             // Instrumentation -------------------
@@ -130,7 +131,14 @@ public class Program
             // If LogConsistencyProvider is not specified it defaults to the state storage provider
             // builder.AddStateStorageBasedLogConsistencyProvider("EventStorage"); // does not store the latest state
             builder.AddLogStorageBasedLogConsistencyProvider("EventStorage"); // stores history of events            
-            // builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage"); // not tried this one 
+            // builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage"); // not tried this one
+
+            // Chapter15 -------------------
+            builder.Configure<SiloMessagingOptions>(options =>
+                options.PropagateActivityId = true
+            );
+            builder.AddIncomingGrainCallFilter<MyIncomingGrainCallFilter>();
+            builder.AddOutgoingGrainCallFilter<MyOutgoingGrainCallFilter>();  
         });
 
         return hb;
