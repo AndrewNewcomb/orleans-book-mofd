@@ -10,6 +10,7 @@ using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
 
+[Orleans.Placement.ActivationCountBasedPlacement] // Chapter 15, can override the default (random) placement strategy for this grain class
 public class RobotGrain : Grain, IRobotGrain, IIncomingGrainCallFilter
 {
     // The timers and reminders added in branch chapter10_timers_and_reminders

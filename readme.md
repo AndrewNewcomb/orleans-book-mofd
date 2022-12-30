@@ -181,4 +181,8 @@ IncomingGrainCallFilter
 
 OutgoingGrainCallFilter
 - Added system wide `MyOutgoingGrainCallFilter` via the builder.
-- Didn't add any grain specific outgoing filters. 
+- Didn't add any grain specific outgoing filters.
+
+PlacementStrategy
+- Override default placement strategy for `RobotGrain` with `Orleans.Placement.ActivationCountBasedPlacement` attribute.
+- More info in the [grain-placement docs](https://learn.microsoft.com/en-us/dotnet/orleans/grains/grain-placement)

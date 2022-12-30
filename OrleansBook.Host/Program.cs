@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Runtime;
 using Orleans.Statistics;
 using OrleansBook.GrainClases;
 
@@ -138,7 +140,7 @@ public class Program
                 options.PropagateActivityId = true
             );
             builder.AddIncomingGrainCallFilter<MyIncomingGrainCallFilter>();
-            builder.AddOutgoingGrainCallFilter<MyOutgoingGrainCallFilter>();  
+            builder.AddOutgoingGrainCallFilter<MyOutgoingGrainCallFilter>();
         });
 
         return hb;
