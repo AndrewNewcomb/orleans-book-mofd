@@ -64,7 +64,7 @@ public class RobotGrain : Grain, IRobotGrain
         // was
         // return Task.FromResult(this.state.State.Instructions.Count);
         //
-        return await this.state.PerformUpdate(state =>
+        return await this.state.PerformRead(state =>
             state.Instructions.Count
         );        
     }
