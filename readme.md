@@ -91,7 +91,7 @@ The instrumentation and stats packages, and their startup configuration are host
 Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md) for more information.
 
 
-# Problems / TODOs
+# Comments / Problems / TODOs
 
 ## Chapter 4 Debugging
 - Setting log level from appsettings.json. It can be set from code, but how to set it from appsettings.json?
@@ -186,3 +186,12 @@ OutgoingGrainCallFilter
 PlacementStrategy
 - Override default placement strategy for `RobotGrain` with `Orleans.Placement.ActivationCountBasedPlacement` attribute.
 - More info in the [grain-placement docs](https://learn.microsoft.com/en-us/dotnet/orleans/grains/grain-placement)
+
+StartUp
+- Added `IStartupTask` to add an instruction for `RobotGrain` ROBBIE if its queue is empty.
+
+Grainservice with GrainServiceClient
+- `ExampleGrain` shows how to call a GrainServiceClient that then calls a GrainService.
+
+Observer
+- Found an example [ObserverManager](https://learn.microsoft.com/en-us/dotnet/orleans/grains/observers) in the Orleans docs.
