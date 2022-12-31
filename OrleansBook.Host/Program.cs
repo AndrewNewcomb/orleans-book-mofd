@@ -10,6 +10,7 @@ using Orleans.Hosting;
 using Orleans.Runtime;
 using Orleans.Statistics;
 using OrleansBook.GrainClases;
+using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.Host;
 
@@ -139,8 +140,20 @@ public class Program
             builder.Configure<SiloMessagingOptions>(options =>
                 options.PropagateActivityId = true
             );
+
             builder.AddIncomingGrainCallFilter<MyIncomingGrainCallFilter>();
             builder.AddOutgoingGrainCallFilter<MyOutgoingGrainCallFilter>();
+
+            builder.AddStartupTask(async (IServiceProvider services, CancellationToken cancellation) =>
+            {
+                var factory = services.GetRequiredService<IGrainFactory>();
+                var grain = factory.GetGrain<IRobotGrain>("ROBBIE");
+                while(!cancellation.IsCancellationRequested)
+                {
+                    if(await grain.GetInstructionCount() == 0) await grain.AddInstruction("Put the kettle on");
+                    await Task.Delay(10000);
+                }
+            });
         });
 
         return hb;

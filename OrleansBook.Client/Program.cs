@@ -35,9 +35,15 @@ class Program
                 }
                 var grain = client.GetGrain<IRobotGrain>(grainId);
 
-                Console.WriteLine("Please enter an instruction...");
+                Console.WriteLine("Please enter an instruction, or '-' to read the next instruction...");
                 var instruction = Console.ReadLine();
-                if(!string.IsNullOrWhiteSpace(instruction))
+
+                if("-".Equals(instruction))
+                {
+                    var poppedInstruction = await grain.GetNextInstruction();
+                    if(poppedInstruction != null) Console.WriteLine($"{grainId} responded: {poppedInstruction}");
+                }
+                else if(!string.IsNullOrWhiteSpace(instruction))
                 {
                     await grain.AddInstruction(instruction);
                 }
