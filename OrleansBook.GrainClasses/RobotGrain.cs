@@ -10,7 +10,8 @@ using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
 
-public class RobotGrain : Grain, IRobotGrain
+[Orleans.Placement.ActivationCountBasedPlacement] // Chapter 15, can override the default (random) placement strategy for this grain class
+public class RobotGrain : Grain, IRobotGrain, IIncomingGrainCallFilter
 {
     // The timers and reminders added in branch chapter10_timers_and_reminders
     // were removed in chapter11_transactions to cut down on noise.
@@ -40,6 +41,22 @@ public class RobotGrain : Grain, IRobotGrain
         await base.OnActivateAsync();
     }  
 
+    // Grain specific IIncomingGrainCallContext
+    // Also have system wide implementation set up via the host builder.
+    public async Task Invoke(IIncomingGrainCallContext context)
+    {
+        if(RequestContext.ActivityId == Guid.Empty) RequestContext.ActivityId = Guid.NewGuid();
+
+        var grainName = context.Grain.GetType().Name;
+        var methodName = context.ImplementationMethod.Name;
+
+        this.logger.Debug(
+            "{grainName} {methodName}. RequestContext.ActivityId {activityId}", 
+            grainName, methodName, RequestContext.ActivityId);
+
+        await context.Invoke();
+    }
+
     private Task Publish(string instruction)
     {
         var message = new InstructionMessage(instruction, this.key);
@@ -64,7 +81,7 @@ public class RobotGrain : Grain, IRobotGrain
         // was
         // return Task.FromResult(this.state.State.Instructions.Count);
         //
-        return await this.state.PerformUpdate(state =>
+        return await this.state.PerformRead(state =>
             state.Instructions.Count
         );        
     }

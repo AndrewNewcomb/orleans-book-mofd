@@ -91,7 +91,7 @@ The instrumentation and stats packages, and their startup configuration are host
 Dashboard visible at http://localhost:8080. See [Orleans dashboard readme](https://github.com/OrleansContrib/OrleansDashboard/blob/master/readme.md) for more information.
 
 
-# Problems / TODOs
+# Comments / Problems / TODOs
 
 ## Chapter 4 Debugging
 - Setting log level from appsettings.json. It can be set from code, but how to set it from appsettings.json?
@@ -168,9 +168,30 @@ You can see the `Apply` methods in the `EventSourcedState` class being called to
 
 There is also a `builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage");` but I've not tried it.
 
-## Chapter 13 Optimizations
-
+## Chapter 14 Optimizations
 Added a slow running method on the RobotGrain, but with a cancellation token so it can be cancelled.  
 Exposed on the WebApi as `robot/{name}/doSomethingSlow/{slowTaskTimeSeconds}/{secondsToWaitBeforeCancelling}`
 - To let the task complete: `curl -k https://127.0.0.1:7055/robot/robbie/doSomethingSlow/3/6`
 - To cancel the task before completion: `curl -k https://127.0.0.1:7055/robot/robbie/doSomethingSlow/6/3`
+
+## Chapter 15 Advanced features
+IncomingGrainCallFilter
+- Added system wide `MyIncomingGrainCallFilter` via the builder. It is applied to all grains including the grains that run the silo, so has code to check the grain namespace.
+- Added an `IIncomingGrainCallFilter` implementation to `RobotGrain`, which is specific to that grain.
+
+OutgoingGrainCallFilter
+- Added system wide `MyOutgoingGrainCallFilter` via the builder.
+- Didn't add any grain specific outgoing filters.
+
+PlacementStrategy
+- Override default placement strategy for `RobotGrain` with `Orleans.Placement.ActivationCountBasedPlacement` attribute.
+- More info in the [grain-placement docs](https://learn.microsoft.com/en-us/dotnet/orleans/grains/grain-placement)
+
+StartUp
+- Added `IStartupTask` to add an instruction for `RobotGrain` ROBBIE if its queue is empty.
+
+Grainservice with GrainServiceClient
+- `ExampleGrain` shows how to call a GrainServiceClient that then calls a GrainService.
+
+Observer
+- Found an example [ObserverManager](https://learn.microsoft.com/en-us/dotnet/orleans/grains/observers) in the Orleans docs.

@@ -1,12 +1,16 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Statistics;
 using OrleansBook.GrainClases;
+using OrleansBook.GrainClasses;
+using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.Host;
 
@@ -43,7 +47,7 @@ public class Program
                 .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
-                    logging.SetMinimumLevel(LogLevel.Warning);
+                    logging.SetMinimumLevel(LogLevel.Debug); // was Warning
                 });
 
             // Instrumentation -------------------
@@ -130,9 +134,37 @@ public class Program
             // If LogConsistencyProvider is not specified it defaults to the state storage provider
             // builder.AddStateStorageBasedLogConsistencyProvider("EventStorage"); // does not store the latest state
             builder.AddLogStorageBasedLogConsistencyProvider("EventStorage"); // stores history of events            
-            // builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage"); // not tried this one 
+            // builder.AddCustomStorageBasedLogConsistencyProvider("EventStorage"); // not tried this one
+
+            // Chapter15 -------------------
+            builder.Configure<SiloMessagingOptions>(options =>
+                options.PropagateActivityId = true
+            );
+
+            builder.AddIncomingGrainCallFilter<MyIncomingGrainCallFilter>();
+            builder.AddOutgoingGrainCallFilter<MyOutgoingGrainCallFilter>();
+            
+            // builder.AddStartupTask(async (IServiceProvider services, CancellationToken cancellation) =>
+            // {
+            //     var factory = services.GetRequiredService<IGrainFactory>();
+            //     var grain = factory.GetGrain<IRobotGrain>("ROBBIE");
+            //     while(!cancellation.IsCancellationRequested)
+            //     {
+            //         if(await grain.GetInstructionCount() == 0) await grain.AddInstruction("Put the kettle on");
+            //         await Task.Delay(10000);
+            //     }
+            // });
+            builder.AddStartupTask<MyStartupTask>();
+
+            builder.AddGrainService<ExampleGrainService>();
+
+            builder.ConfigureServices(s =>
+            {
+                s.AddSingleton<IExampleGrainService, ExampleGrainService>();
+                s.AddSingleton<IExampleGrainServiceClient, ExampleGrainServiceClient>();
+            });
         });
 
         return hb;
-    }             
+    }
 }
