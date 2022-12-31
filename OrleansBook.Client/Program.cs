@@ -24,6 +24,9 @@ class Program
         {
             await client.Connect();
 
+            var exampleGrain = client.GetGrain<IExampleGrain>("Ex1");
+            Console.WriteLine($"ExampleGrain says the time is {exampleGrain.GetDateTime().Result}");
+
             while(true)
             {
                 Console.WriteLine("Please enter a robot name (or 'exit' to stop)...");              

@@ -9,6 +9,8 @@ using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Statistics;
 using OrleansBook.GrainClases;
+using OrleansBook.GrainClasses;
+using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.Host;
 
@@ -154,12 +156,13 @@ public class Program
             // });
             builder.AddStartupTask<MyStartupTask>();
 
-            builder
-                .AddGrainService<ExampleGrainService>()
-                .ConfigureServices(s =>
-                {
-                    s.AddSingleton<IExampleGrainService, ExampleGrainService>();
-                });
+            builder.AddGrainService<ExampleGrainService>();
+
+            builder.ConfigureServices(s =>
+            {
+                s.AddSingleton<IExampleGrainService, ExampleGrainService>();
+                s.AddSingleton<IExampleGrainServiceClient, ExampleGrainServiceClient>();
+            });
         });
 
         return hb;

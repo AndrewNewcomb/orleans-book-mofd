@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Runtime;
 
+namespace OrleansBook.GrainClasses;
+
 public class MyIncomingGrainCallFilter : IIncomingGrainCallFilter
 {
     // Chapter 15. System wide filter, set via `builder.AddIncomingGrainCallFilter<MyIncomingGrainCallFilter>()`

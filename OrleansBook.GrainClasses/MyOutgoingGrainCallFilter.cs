@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Runtime;
 
+namespace OrleansBook.GrainClasses;
+
 public class MyOutgoingGrainCallFilter : IOutgoingGrainCallFilter
 {
     // Chpater 15. System wide filter, set via `builder.AddOutgoingGrainCallFilter<MyOutgoingGrainCallFilter>()`

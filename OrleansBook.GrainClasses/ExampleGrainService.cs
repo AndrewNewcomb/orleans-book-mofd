@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Core;
 using Orleans.Runtime;
-using Orleans.Streams;
-using Orleans.Transactions.Abstractions;
 using OrleansBook.GrainInterfaces;
 
 namespace OrleansBook.GrainClases;
