@@ -153,6 +153,13 @@ public class Program
             //     }
             // });
             builder.AddStartupTask<MyStartupTask>();
+
+            builder
+                .AddGrainService<ExampleGrainService>()
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<IExampleGrainService, ExampleGrainService>();
+                });
         });
 
         return hb;
